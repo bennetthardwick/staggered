@@ -1,6 +1,16 @@
-# staggered
+<p align="center">
+	<a href="https://github.com/bennetthardwick/staggered" title="Staggered">
+    <img src="/static/staggered.svg" width="250" alt="Clipchamp">
+  </a>
+  <p align="center">
+    A outrageously simple React library for staggering in elements.
+  </p>
+</p>
 
-> A simple React library for staggering in elements.
+<p align="center">
+  <img src="/static/example.gif" width="400" alt="Clipchamp">
+</p>
+
 
 [![NPM](https://img.shields.io/npm/v/staggered.svg)](https://www.npmjs.com/package/staggered) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 
@@ -13,17 +23,20 @@ npm install --save staggered
 ## Usage
 
 ```tsx
-import * as React from 'react'
+import React from 'react'
 
-import MyComponent from 'staggered'
+import { StaggerWrapper, Stagger } from 'staggered'
 
-class Example extends React.Component {
-  render () {
-    return (
-      <MyComponent />
-    )
-  }
-}
+const Example  = () => <StaggerWrapper>
+  <Stagger staggerId='title'>
+    <h1>Title</h1>
+  </Stagger>
+  <Stagger staggerId='content'>
+    <p>
+      "..."
+    </p>
+  </Stagger>
+</StaggerWraper>
 ```
 
 ## License

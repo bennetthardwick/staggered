@@ -68,9 +68,6 @@ export class StaggerWrapper extends React.Component<{}, { isVisible: boolean }> 
   render(): JSX.Element {
     const { children, ...rest } = this.props;
     const { isVisible } = this.state;
-
-    console.log(isVisible);
-
     return (
       <Flipper
         {...rest}
