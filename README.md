@@ -1,6 +1,6 @@
 <p align="center">
 	<a href="https://github.com/bennetthardwick/staggered" title="Staggered">
-    <img src="/static/staggered.svg" width="250" alt="Clipchamp">
+    <img src="/static/staggered.svg" width="250" alt="Staggered">
   </a>
   <p align="center">
     A outrageously simple React library for staggering in elements.
@@ -8,7 +8,7 @@
 </p>
 
 <p align="center">
-  <img src="/static/example.gif" width="400" alt="Clipchamp">
+  <img src="/static/example.gif" width="400" alt="Staggered">
 </p>
 
 
