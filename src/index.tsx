@@ -19,38 +19,66 @@ export interface StaggerProps {
   staggerId: string;
 }
 
-export const Stagger: FunctionComponent<StaggerProps> = !(
-  isSSR() || isMobileBrowser()
-)
-  ? ({ children, staggerId, ...rest }) => (
-      <Flipped {...rest} stagger="default" flipId={staggerId}>
-        <StaggerContainer>{children}</StaggerContainer>
-      </Flipped>
-    )
-  : ({ children, staggerId, ...rest }) => <div {...rest}>{children}</div>;
+const ShouldStaggerContext = React.createContext(true);
+
+export const Stagger: FunctionComponent<StaggerProps> = ({
+  children,
+  staggerId,
+  ...rest
+}) => (
+  <ShouldStaggerContext.Consumer>
+    {shouldStagger => {
+      console.log("should", shouldStagger);
+
+      return shouldStagger ? (
+        <Flipped {...rest} stagger="default" flipId={staggerId}>
+          <StaggerContainer>{children}</StaggerContainer>
+        </Flipped>
+      ) : (
+        <div {...rest}>{children}</div>
+      );
+    }}
+  </ShouldStaggerContext.Consumer>
+);
 
 export const StaggerAnimationContainer: FunctionComponent<{
   visible: boolean;
-}> = !(isSSR() || isMobileBrowser())
-  ? styled.div<{ visible: boolean }>`
-      ${props =>
-        props.visible
-          ? `
+}> = ({ children, ...rest }) => (
+  <ShouldStaggerContext.Consumer>
+    {shouldStagger => {
+      const Container = styled.div<{ visible: boolean }>`
+        ${props =>
+          props.visible
+            ? `
                 ${StaggerContainer} {
                   opacity: 1;
                   transform: translateY(0);
                 }
             `
-          : `
+            : `
                 ${StaggerContainer} {
                   opacity: 0;
                   transform: translateY(15px);
                 }
             `}
-    `
-  : ({ children, visible, ...rest }) => <div {...rest}>{children}</div>;
+      `;
 
-export class StaggerWrapper extends React.Component<{}, { isVisible: boolean }> {
+      return shouldStagger ? (
+        <Container {...rest}>{children}</Container>
+      ) : (
+        <div {...rest}>{children}</div>
+      );
+    }}
+  </ShouldStaggerContext.Consumer>
+);
+
+export class StaggerWrapper extends React.Component<
+  {
+    shouldStagger?: boolean;
+    staggerOnMobile?: boolean;
+  },
+  { isVisible: boolean }
+> {
   // Apparently I can't use function components for
   // compatibility reasons. WHY?
 
@@ -66,18 +94,26 @@ export class StaggerWrapper extends React.Component<{}, { isVisible: boolean }> 
   }
 
   render(): JSX.Element {
-    const { children, ...rest } = this.props;
+    const { children, shouldStagger, staggerOnMobile, ...rest } = this.props;
     const { isVisible } = this.state;
     return (
-      <Flipper
-        {...rest}
-        flipKey={isVisible}
-        staggerConfig={{ default: { speed: 0.2 } }}
+      <ShouldStaggerContext.Provider
+        value={
+          typeof shouldStagger === "undefined"
+            ? !isSSR() && (staggerOnMobile ? true : !isMobileBrowser())
+            : shouldStagger
+        }
       >
-        <StaggerAnimationContainer visible={isVisible}>
-          {children}
-        </StaggerAnimationContainer>
-      </Flipper>
+        <Flipper
+          {...rest}
+          flipKey={isVisible}
+          staggerConfig={{ default: { speed: 0.2 } }}
+        >
+          <StaggerAnimationContainer visible={isVisible}>
+            {children}
+          </StaggerAnimationContainer>
+        </Flipper>
+      </ShouldStaggerContext.Provider>
     );
   }
 }
