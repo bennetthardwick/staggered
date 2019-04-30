@@ -16,30 +16,49 @@ export interface StaggerProps {
   /**
    * A unique id for each stagger element
    */
-  staggerId: string;
+  staggerId?: string;
 }
+
+const counter = (() => {
+  let id = 0;
+  return () => "_" + ++id;
+})();
 
 const ShouldStaggerContext = React.createContext(true);
 
-export const Stagger: FunctionComponent<StaggerProps> = ({
-  children,
-  staggerId,
-  ...rest
-}) => (
-  <ShouldStaggerContext.Consumer>
-    {shouldStagger => {
-      console.log("should", shouldStagger);
+export class Stagger extends React.Component<
+  StaggerProps,
+  { _staggerId: string }
+> {
+  constructor(props: StaggerProps) {
+    super(props);
+    this.state = {
+      _staggerId: counter()
+    };
+  }
 
-      return shouldStagger ? (
-        <Flipped {...rest} stagger="default" flipId={staggerId}>
-          <StaggerContainer>{children}</StaggerContainer>
-        </Flipped>
-      ) : (
-        <div {...rest}>{children}</div>
-      );
-    }}
-  </ShouldStaggerContext.Consumer>
-);
+  render(): JSX.Element {
+    const { staggerId, children, ...rest } = this.props;
+
+    return (
+      <ShouldStaggerContext.Consumer>
+        {shouldStagger =>
+          shouldStagger ? (
+            <Flipped
+              {...rest}
+              stagger="default"
+              flipId={staggerId || this.state._staggerId}
+            >
+              <StaggerContainer>{children}</StaggerContainer>
+            </Flipped>
+          ) : (
+            <div {...rest}>{children}</div>
+          )
+        }
+      </ShouldStaggerContext.Consumer>
+    );
+  }
+}
 
 export const StaggerAnimationContainer: FunctionComponent<{
   visible: boolean;
@@ -76,6 +95,7 @@ export class StaggerWrapper extends React.Component<
   {
     shouldStagger?: boolean;
     staggerOnMobile?: boolean;
+    auto?: boolean;
   },
   { isVisible: boolean }
 > {
@@ -94,7 +114,13 @@ export class StaggerWrapper extends React.Component<
   }
 
   render(): JSX.Element {
-    const { children, shouldStagger, staggerOnMobile, ...rest } = this.props;
+    const { children, shouldStagger, staggerOnMobile, auto, ...rest } = this.props;
+
+    let staggerChildren = children;
+    if (auto) {
+      staggerChildren = React.Children.map(children, (child, i) => <Stagger staggerId={i + '--'}>{ child }</Stagger>);
+    }
+
     const { isVisible } = this.state;
     return (
       <ShouldStaggerContext.Provider
@@ -110,7 +136,7 @@ export class StaggerWrapper extends React.Component<
           staggerConfig={{ default: { speed: 0.2 } }}
         >
           <StaggerAnimationContainer visible={isVisible}>
-            {children}
+            {staggerChildren}
           </StaggerAnimationContainer>
         </Flipper>
       </ShouldStaggerContext.Provider>
